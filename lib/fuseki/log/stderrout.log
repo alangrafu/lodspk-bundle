@@ -1,0 +1,5 @@
+22:42:13 INFO  Server               :: TDB dataset: directory=/var/www/lodspk-bundle/lodspeakr/lib/fuseki/data
+22:42:14 INFO  Server               :: Dataset path = /ds
+22:42:14 INFO  Server               :: Fuseki 0.2.4 2012-08-03T11:40:41-0700
+22:42:14 INFO  Server               :: Jetty 7.x.y-SNAPSHOT
+22:42:14 INFO  Server               :: Started 2012/09/08 22:42:14 PDT on port 3030
