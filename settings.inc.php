@@ -4,7 +4,7 @@ $conf['endpoint']['local'] = 'http://localhost:3030/ds/query';
 $conf['updateendpoint']['local'] = 'http://localhost:3030/ds/data';
 $conf['home'] = '/var/www/lodspk-bundle/lodspeakr/';
 $conf['basedir'] = 'http://alia/lodspk-bundle/';
-$conf['debug'] = true;
+$conf['debug'] = false;
 
 /*ATTENTION: By default this application is available to
  * be exported and copied (its configuration)

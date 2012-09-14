@@ -113,14 +113,20 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
             <span class='icon-bar'></span>
             <span class='icon-bar'></span>
           </a>
-          <a class='brand' href='../admin'>LODSPeaKr Admin Menu</a>
+          <a class='brand' href='../admin'>LODSPK Admin Menu</a>
           <div class='nav-collapse'>
             <ul class='nav'>
-              <li class='active'><a href='../admin'>Home</a></li>
+              <li ><a href='../admin'>Home</a></li>
+              <li class='dropdown'>
+               <a class='dropdown-toggle' data-toggle='dropdown' href='#'>SPARQL Endpoint<b class='caret'></b></a>
+               <ul class='dropdown-menu'>
+              <li><a href='../admin/start'>Start endpoint</a></li>
+              <li><a href='../admin/stop'>Stop endpoint</a></li>
+              <li><a href='../admin/load'>Add RDF</a></li>
+              <li><a href='../admin/remove'>Remove RDF</a></li>
+               </ul>
+              </li>
             </ul>
-            <form class='navbar-search pull-left' action=''>
-              <input type='text' data-provide='typeahead' class='typeahead search-query span2' placeholder='Search'/>
-            </form>
           </div><!--/.nav-collapse -->
         </div>
       </div>
