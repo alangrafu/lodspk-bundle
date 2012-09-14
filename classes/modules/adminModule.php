@@ -186,9 +186,9 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
   	  case "remove":
   	    $this->deleteRDF();
   	    break;
-  	  case "components":
+  	  /*case "components":
   	    $this->componentEditor();
-  	    break;
+  	    break;*/
   	  default:
   	    HTTPStatus::send404($params[1]);
   	  }
