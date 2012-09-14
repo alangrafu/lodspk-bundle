@@ -22,6 +22,65 @@ class AdminModule extends abstractModule{
         padding-right:20px;
         background-position: right;
       }
+      /* Base class */
+.bs-docs-template {
+  position: relative;
+  margin: 0px 0;
+  padding: 39px 19px 14px;
+  *padding-top: 19px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+
+/* Echo out a label for the example */
+.bs-docs-template:after {
+  content: 'Template';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #9da0a4;
+  -webkit-border-radius: 4px 0 4px 0;
+     -moz-border-radius: 4px 0 4px 0;
+          border-radius: 4px 0 4px 0;
+}
+
+.bs-docs-query {
+  position: relative;
+  margin: 0px 0;
+  padding: 39px 19px 14px;
+  *padding-top: 19px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+
+/* Echo out a label for the example */
+.bs-docs-query:after {
+  content: 'Query';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #9da0a4;
+  -webkit-border-radius: 4px 0 4px 0;
+     -moz-border-radius: 4px 0 4px 0;
+          border-radius: 4px 0 4px 0;
+}
+textarea{ font-family: Monaco,'Droid Sans Mono'}
     </style>
     <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' type='text/css' media='screen' />
     <script type='text/javascript' src='../js/jquery.js'></script>
@@ -111,23 +170,30 @@ class AdminModule extends abstractModule{
   	  exit(0);
   	}
   	if(sizeof($params) == 2){
-  	  if($params[1] == "menu"){
+  	  switch($params[1]){
+  	  case "menu":
   	    $this->homeMenu();
-  	  }
-  	  if($params[1] == "start"){
+  	    break;
+  	  case "start":
   	    $this->startEndpoint();
-  	  }
-  	  if($params[1] == "stop"){
+  	    break;
+  	  case "stop":
   	    $this->stopEndpoint();
-  	  }
-  	  if($params[1] == "load"){
+  	    break;
+  	  case "load":
   	    $this->loadRDF();
-  	  }
-  	  if($params[1] == "remove"){
+  	    break;
+  	  case "remove":
   	    $this->deleteRDF();
+  	    break;
+  	  case "components":
+  	    $this->componentEditor();
+  	    break;
+  	  default:
+  	    HTTPStatus::send404($params[1]);
   	  }
-  	  HTTPStatus::send404($params[1]);
-  	}  	
+  	} 
+  	exit(0);
   }
   
   protected function loadRDF(){
@@ -243,6 +309,48 @@ class AdminModule extends abstractModule{
       echo $this->head ."<div class='alert alert-error'>Error: /tmp/fusekiPid already exists. This probably means Fuseki is already running. You could also try to <a href='stop'>stop</a> the endpoint first.</div><div class='alert'>You can now return to the <a href='menu'>home menu</a>.</div>".$this->foot;
     }
   }
+  
+  protected function componentEditor(){
+    exec ("utils/lodspk.sh list components", &$output, $return_var);
+    $menu = "";
+    foreach($output as $line){
+      if($line == ""){
+          $menu .= "</ul>\n";
+      }else{
+        if(preg_match("/^\w/", $line) ){
+            $menu .= "<ul class='nav nav-list'>
+            <li class='nav-header'>".trim($line)."</li>\n";
+        }else{
+          $menu .= "<li><a href='#'>".trim($line)."</a></li>\n";
+        }
+      }
+    }
+    echo $this->head ."<div class='row-fluid'>
+    <div class='span3 well'>$menu
+    </div>
+    <div class='bs-docs-template span9'>
+     <textarea class='field span12' rows='8' cols='25'></textarea>
+      <button class='btn btn-info'>Save</button>
+    </div>
+   </div> 
+    <div class='row-fluid'>
+    <div class='span3 well'>
+     <ul class='nav nav-list'>
+      <li class='nav-header'>Queries</li>
+      <li><a href='#'>sp.query</a></li>
+      <li><a href='#'>po.query</a></li>
+      <li><a href='#'>dbpedia/details.query</a></li>
+      </ul>
+    </div>
+     <div class='span9  bs-docs-query'>
+      <textarea class='field span12' rows='8' cols='25'></textarea>
+      <button class='btn btn-info'>Save</button>
+     </div>
+    </div>
+   </div>
+  </div>
+    ".$this->foot;
+  }
 
   protected function stopEndpoint(){
     $return_var = 0;
@@ -272,7 +380,12 @@ class AdminModule extends abstractModule{
       </div>
       <div class='span4 well'>
       <h2>Endpoint status</h2>
-      ".$msg."      </div>".$this->foot;
+      ".$msg."      </div>
+            <div class='span6 well'>
+      <h2>Components Editor</h2>
+      <p>You can edit the components using the <a href='components'>editor</a></p>
+</div>
+      ".$this->foot;
 
   }
   
