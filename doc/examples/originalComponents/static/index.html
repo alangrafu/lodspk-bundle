@@ -66,17 +66,25 @@
 
     <div class="container">
       <img src="img/lodspeakr_logotype.png" style="opacity: 0.1; position: absolute; right:0px; top:60%"/>
-      <h1>LODSPeaKr is installed!</h1>
+      <h1>LODSPeaKr Bundle is installed!</h1>
       <p></p>
+     <div class="row-fluid">
       <div class="span5 well">
-      <h2>Explore your data!</h2>
+       <h2>First: Start your endpoint and load data</h2>
+       <p>LODSPeaKr Bundle comes with Jena Fuseki, a SPARQL 1.1 triple store. To start using it, first you need to go to the <a href='admin'>Administration menu</a> and start the triple store. In that menu you can also load and remove RDF from different Named Graphs. You can also add and remove namespaces as well.</p>
+      <p><strong>Note: the default user and password are "admin" and "admin"</strong>.</p>
+      </div>
+      <div class="span5 well">
+      <h2>Second: Explore your data!</h2>
         <p>Your data is already published as Linked Data. This includes <a href='http://en.wikipedia.org/wiki/Content_negotiation'>Content Negotiation</a>, which gives you the ability to serve your data in multiple formats for humans (HTML) and machines (Turtle, RDF/XML, N-Triples, RDF/JSON). You can start by looking at the <a href='classes'>classes</a> in your triple store or the <a href='namedGraphs'>named graphs</a> available.</p>
       </div>
+     </div>
+     <div class="row-fluid">
       <div class="span5 well">
-      <h2>Add static files</h2>
+      <h2>Third: Add static files</h2>
         <p>You can also serve (and use) files that help you to present your content the way you want (JavaScript, CSS, images, etc). Just copy them on the <code>static</code> folder inside lodspeakr and you are ready to use them. For more information <a href='https://github.com/alangrafu/lodspeakr/wiki/Statics'>about static files in LODSPeaKR</a> and <a href='https://github.com/alangrafu/lodspeakr/wiki/Change-root-page'>how to change the landing page</a>, please check the wiki</a>.</p>
       </div>
-      <div class="span5 well">
+      <!--div class="span5 well">
       <h2>Understanding components</h2>
         <p>In LODSPeaKr, components are entities (usually a set of templates and sparql queries) that are applied when a particular URI is being retrieved. The templates are based on <a href='http://haanga.org/'>Haanga</a>, and you can see <a href='https://github.com/alangrafu/lodspeakr/wiki/Examples-how-to-use-haanga-in-lodspeakr'>several examples of Haanga in LODSPeaKr in the wiki</a>.</p>
         <p>Currently, LODSPeaKr supports 3 types of components. You can learn <a href='https://github.com/alangrafu/lodspeakr/wiki/Creating-components-in-LODSPeaKr'>how to create components</a> in the wiki.</p>
@@ -86,11 +94,12 @@
           <li><strong>URI components:</strong> In some cases, you want to treat a particular URI different than others of the same type. To do that, you can create a URI component, to specify a particular set of SPARQL queries and template for it.</li>
           </ul>
        </p>
-      </div>
+      </div-->
       <div class="span5 well">
-      <h2>Use <code>lodspk.sh</code>, LODSPeaKr command-line tool</h2>
+      <h2>Fourth: Use <code>lodspk.sh</code>, LODSPeaKr command-line tool</h2>
       <p><code>lodspk.sh</code> is a tool that simplifies the creation and edit of components. It also simplifies the process of debugging and cleaning the cache. Check all the <a href='https://github.com/alangrafu/lodspeakr/wiki/Using-lodspk.sh'>options including with it</a>. Is it <strong>highly recommended</strong> to use it when creating, developing and debugging components.</p>
       </div>
+     </div>
     </div>
   </body>
 </html>

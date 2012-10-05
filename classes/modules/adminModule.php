@@ -7,7 +7,7 @@ class AdminModule extends abstractModule{
 <html lang='en'>
   <head>
     <meta charset='utf-8'>
-    <title>LODSPeaKr Basic Menu</title>
+    <title>LODSPeaKr Admin Menu</title>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <meta name='description' content=''>
     <meta name='author' content=''>
@@ -85,24 +85,6 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
     <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' type='text/css' media='screen' />
     <script type='text/javascript' src='../js/jquery.js'></script>
     <script type='text/javascript' src='../js/bootstrap.min.js'></script>
-    <script type='text/javascript' src='../js/bootstrap-typeahead.js'></script>
-    <script type='text/javascript'>
-    $(document).ready(function(){
-        $('.typeahead').typeahead({
-            source: function (typeahead, query) {
-              $('.typeahead').addClass('wait');[]
-              return $.get('search/'+encodeURIComponent(query), { }, function (data) {
-                  $('.typeahead').removeClass('wait');[]
-                  return typeahead.process(data);
-              }, 'json');
-            },
-            onselect: function (obj) {
-              $('.typeahead').attr('disabled', true);
-              window.location = obj.uri;
-            }
-        });
-    });
-    </script>
   </head>
   <body>
  <div class='navbar navbar-fixed-top'>
@@ -116,7 +98,7 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
           <a class='brand' href='../admin'>LODSPK Admin Menu</a>
           <div class='nav-collapse'>
             <ul class='nav'>
-              <li ><a href='../admin'>Home</a></li>
+              <li ><a href='../admin'>Admin home</a></li>
               <li class='dropdown'>
                <a class='dropdown-toggle' data-toggle='dropdown' href='#'>SPARQL Endpoint<b class='caret'></b></a>
                <ul class='dropdown-menu'>
@@ -125,6 +107,12 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
               <li><a href='../admin/load'>Add RDF</a></li>
               <li><a href='../admin/remove'>Remove RDF</a></li>
                </ul>
+              </li>
+              <li>
+               <a class='dropdown-toggle' data-toggle='dropdown' href='../admin/namespaces'>Namespaces<b class='caret'></b></a>
+              </li>
+              <li>
+               <a href='../'>Go to main site</a>
               </li>
             </ul>
           </div><!--/.nav-collapse -->
@@ -192,6 +180,9 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
   	  case "remove":
   	    $this->deleteRDF();
   	    break;
+  	  case "namespaces":
+  	    $this->editNamespaces();
+  	    break;
   	  /*case "components":
   	    $this->componentEditor();
   	    break;*/
@@ -206,17 +197,29 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
     global $conf;
     if($_SERVER['REQUEST_METHOD'] == 'GET'){
       echo $this->head."
+     <div class='fluid-row'>
+      <div class='span5'>
       <form action='load' method='post'
       enctype='multipart/form-data'>
       <legend>Load RDF into the endpoint</legend>
+      <div class='alert alert-info'><span class='label label-info'>Important</span> If you load data into an existing Named graph, the content will be overwritten!</div>
       <label for='file'>RDF file</label>
       <input type='file' name='file' id='file' />
       <span class='help-block'>LODSPeaKr accepts RDF/XML, Turtle and N-Triples files</span>
       <label for='file'>Named graph</label>
-      <input type='text' name='namedgraph' id='namedgraph' />
+      <input type='text' name='namedgraph' id='namedgraph' value='default'/>
       <span class='help-block'>The named graph where the RDF will be stored (optional).</span>
       <br />
-      <button type='submit' class='btn'>Submit</button></form>
+      <button type='submit' class='btn btn-large'>Submit</button>
+      </form>
+      </div>
+      <div class='span6'>
+       <legend>Named Graphs</legend>
+       <div id='ng'></div>
+      </div>
+     </div>
+     <script type='text/javascript' src='".$conf['basedir']."js/jquery.js'></script>
+     <script type='text/javascript' src='".$conf['basedir']."js/namedgraphs.js'></script>
       ".$this->foot;
     }elseif($_SERVER['REQUEST_METHOD'] == 'POST'){
       if ($_FILES["file"]["error"] > 0){
@@ -272,14 +275,24 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
     global $conf;
     if($_SERVER['REQUEST_METHOD'] == 'GET'){
       echo $this->head."
+     <div class='fluid-row'>
+      <div class='span5'>
       <form action='remove' method='post'
       enctype='multipart/form-data'>
-      <legend>Remove a Named Graph containing RDF from the endpoint</legend>
+      <legend>Remove a Named Graph containing RDF</legend>
       <label for='file'>Named graph</label>
       <input type='text' name='namedgraph' id='namedgraph' />
       <span class='help-block'>The named graph where the RDF is stored.</span>
       <br />
       <button type='submit' class='btn'>Submit</button></form>
+      </div>
+      <div class='span6'>
+       <legend>Named Graphs</legend>
+       <div id='ng'></div>
+      </div>
+     </div>
+     <script type='text/javascript' src='".$conf['basedir']."js/jquery.js'></script>
+     <script type='text/javascript' src='".$conf['basedir']."js/namedgraphs.js'></script>
       ".$this->foot;
     }elseif($_SERVER['REQUEST_METHOD'] == 'POST'){
       $ng = (isset($_POST['namedgraph']))?$_POST['namedgraph']:'default';
@@ -305,6 +318,59 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
     exit(0);
   }
 
+
+  protected function editNamespaces(){
+    global $conf;
+    if($_SERVER['REQUEST_METHOD'] == 'GET'){
+      $nstable = "";
+      foreach($conf['ns'] as $k=>$v){
+       $nstable .= "<tr><td>".$k."</td><td id='$k'>".$v."</td><td><button class='button edit-button' data-prefix='$k' data-ns='$v'>Edit</button></tr>";
+      }
+      echo $this->head."
+     <div class='fluid-row'>
+      <div class='span7'>
+      <form action='namespaces' method='post'
+      enctype='multipart/form-data'>
+      <legend>Edit main namespace</legend>
+      <label for='file'>Prefix</label>
+      <input type='text' name='prefix' id='prefix' value='local'/>
+      <span class='help-block'>The prefix to describe this namespace ('local' is the one used to mirror URIs of the data in this server)</span>
+      <label for='file'>Namespace</label>
+      <input type='text' name='namespace' id='namespace' value='".$conf['ns']['local']."'/>
+      <span class='help-block'>The namespace of the data being served</span>
+      <br />
+      <button type='submit' class='btn'>Submit</button></form>
+      </div>
+      <div class='span4 well'>
+      <legend>Edit local namespace</legend>
+      <p>'local' namespace defines which types of URI will be mirrored in this server. Thus, it is possible to serve data about <code>http://example.org/myresource</code> by dereferencing <code>".$conf['ns']['local']."myresource</code></p>
+      <legend>Add a new  namespace</legend>
+      <p>To add a new namespace, simply change the prefix from 'local' to the new one you want to add and include the namespaces in the following box.</p>
+      <legend>Edit other namespace</legend>
+      <p>Click on 'edit' in the proper row in the following table and modify the values in the form.</p>
+      </div>
+     </div>
+     <script type='text/javascript' src='".$conf['basedir']."js/jquery.js'></script>
+     <script type='text/javascript' src='".$conf['basedir']."js/namespaces.js'></script>
+     <div class='fluid-row'>
+      <div class='span8'>
+       <legend>Edit other namespaces</legend>
+       <table class='table table-striped'>
+        <thead><td>Prefix</td><td>Namespace</td><td>Edit</td></thead>$nstable</table>
+      ".$this->foot;
+    }elseif($_SERVER['REQUEST_METHOD'] == 'POST'){
+      $ns = (isset($_POST['namespace']))?$_POST['namespace']:'http://'.$_SERVER['SERVER_NAME'].'/';
+      $prefix = (isset($_POST['prefix']))?$_POST['prefix']:'local';
+      $return_var = 0;
+      exec ("php utils/modules/remove-namespace.php ".$prefix, &$output, $return_var);
+      exec ("php utils/modules/add-namespace.php ".$prefix." ".$ns, &$output, $return_var);  
+      if($return_var == 0){
+        echo $this->head ."<div class='alert alert-success'>Your main namespace was updated successfully to $ns</div><div class='alert'>You can now return to the <a href='menu'>home menu</a>.</div>".$this->foot;
+      }else{
+        echo $this->head ."<div class='alert alert-error'>Error: Update did not finished successfullt. Please check setting.inc.php located at ".$conf['home'].".</div><div class='alert'>You can now return to the <a href='menu'>home menu</a>.</div>".$this->foot;
+    }
+    }
+  }
   
   protected function startEndpoint(){
     $return_var = 0;
@@ -369,6 +435,7 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
   }
   
   protected function homeMenu(){
+    global $conf;
     $output = array();
     exec ("utils/modules/test-endpoint.sh", $output, $return_var);
     $msg = "<div class='alert alert-success'>Endpoint running</div>";
@@ -388,23 +455,26 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
       <h2>Endpoint status</h2>
       ".$msg."      </div>
             <div class='span6 well'>
-      <h2>Components Editor</h2>
-      <p>You can edit the components using the <a href='components'>editor</a></p>
+      <!--h2>Components Editor</h2>
+      <p>You can edit the components using the <a href='components'>editor</a></p-->
+      <h2>Edit your namespaces</h2>
+      <p>LODSPeaKr needs to know the namespace of the URIs you want to publish. In this way you can create resolvable URIs in this server. You can <a href='namespaces'>edit your main namespace</a> here.</p>
 </div>
       ".$this->foot;
 
   }
   
   protected function auth(){    
+    global $conf;
     $realm = 'Restricted area';    
     //user => password
-    $users = array('admin' => 'admin', 'guest' => 'guest');
+    $users = array('admin' => $conf['admin']['pass']);
     if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
       header('HTTP/1.1 401 Unauthorized');
       header('WWW-Authenticate: Digest realm="'.$realm.
         '",qop="auth",nonce="'.uniqid().'",opaque="'.md5($realm).'"');
       
-      die('Text to send if user hits Cancel button');
+      die('Access to administration menu requires valid authentication');
     }
     // analyze the PHP_AUTH_DIGEST variable
     if (!($data = $this->http_digest_parse($_SERVER['PHP_AUTH_DIGEST'])) ||

@@ -1,6 +1,6 @@
-SELECT DISTINCT ?g WHERE {
+SELECT DISTINCT ?g ?gL WHERE {
   GRAPH ?g{
-  	[] ?p ?resource .
+  	?x ?p ?y .
   }
 }
  order by ?g
