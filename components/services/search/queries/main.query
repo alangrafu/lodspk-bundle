@@ -6,6 +6,7 @@ SELECT DISTINCT ?resource ?label WHERE {
   }UNION{
     ?resource rdfs:label ?label .
   }
-  FILTER(regex(str(?label), "{{lodspk.args.arg0}}", "i"))
+ FILTER(regex(str(?label), "{{lodspk.args.arg0}}", "i"))
 }
 LIMIT 10
+ 

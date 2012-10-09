@@ -1,6 +1,5 @@
 <?
 
-$conf['endpoint']['local'] = 'http://localhost:3030/ds/query';
 $conf['updateendpoint']['local'] = 'http://localhost:3030/ds/data';
 $conf['home'] = '/var/www/lodspk-bundle/lodspeakr/';
 $conf['basedir'] = 'http://alia/lodspk-bundle/';
@@ -20,4 +19,7 @@ $conf['ns']['base']   = 'http://alia/lodspk-bundle/';
 $conf['mirror_external_uris'] = $conf['ns']['local'];
 
 $conf['modules']['available'] = array('admin','static','uri','type','service');
+
+$conf['endpoint']['wbank'] = 'http://worldbank.270a.info/sparql';
+$conf['endpoint']['local'] = 'http://localhost:3030/ds/query';
 ?>

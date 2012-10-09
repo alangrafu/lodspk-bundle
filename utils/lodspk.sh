@@ -30,7 +30,7 @@ if [[ $# -eq 0 || "$1" == "--help" ]]; then
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-operations=( create delete debug backup restore default cache version enable disable add remove list )
+operations=( create delete debug backup restore default cache version enable disable add remove list details )
 currentOperation=
 
 if [[ ${operations[@]} =~ $1 ]]; then
@@ -262,5 +262,26 @@ if [[ $currentOperation == "list" ]]; then
   else
     php $DIR/modules/list-$listOperation.php
   fi
+  exit
+fi
+
+
+## Details
+if [[ $currentOperation == "details" ]]; then
+  if [ "$#" != "3" ]; then
+    echo -e $USAGE
+    exit 1
+  fi
+  detailOperation=( type service uri )
+  if [[ ${detailOperation[@]} =~ $2 && $2 != "" ]]
+  then
+    detailOperation=$2
+  else
+    echo -e "Option '$2' not supported. Operation aborted\n" >&2
+    echo -e $USAGE
+    exit 1
+  fi
+  cd $DIR/..
+  $DIR/modules/detail-component.sh $detailOperation $3
   exit
 fi

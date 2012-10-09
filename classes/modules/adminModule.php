@@ -80,7 +80,7 @@ class AdminModule extends abstractModule{
      -moz-border-radius: 4px 0 4px 0;
           border-radius: 4px 0 4px 0;
 }
-textarea{ font-family: Monaco,'Droid Sans Mono'}
+textarea{ font-family: Monaco,'Droid Sans Mono'; font-size: 80%}
     </style>
     <link href='../css/bootstrap-responsive.min.css' rel='stylesheet' type='text/css' media='screen' />
     <script type='text/javascript' src='../js/jquery.js'></script>
@@ -110,6 +110,9 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
               </li>
               <li>
                <a class='dropdown-toggle' data-toggle='dropdown' href='../admin/namespaces'>Namespaces<b class='caret'></b></a>
+              </li>
+              <li>
+               <a class='dropdown-toggle' data-toggle='dropdown' href='../admin/endpoints'>Endpoints<b class='caret'></b></a>
               </li>
               <li>
                <a href='../'>Go to main site</a>
@@ -163,33 +166,38 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
   	  header( 'Location: menu' ) ;
   	  exit(0);
   	}
-  	if(sizeof($params) == 2){
-  	  switch($params[1]){
-  	  case "menu":
-  	    $this->homeMenu();
-  	    break;
-  	  case "start":
-  	    $this->startEndpoint();
-  	    break;
-  	  case "stop":
-  	    $this->stopEndpoint();
-  	    break;
-  	  case "load":
-  	    $this->loadRDF();
-  	    break;
-  	  case "remove":
-  	    $this->deleteRDF();
-  	    break;
-  	  case "namespaces":
-  	    $this->editNamespaces();
-  	    break;
-  	  /*case "components":
+  	switch($params[1]){
+  	case "menu":
+  	  $this->homeMenu();
+  	  break;
+  	case "start":
+  	  $this->startEndpoint();
+  	  break;
+  	case "stop":
+  	  $this->stopEndpoint();
+  	  break;
+  	case "load":
+  	  $this->loadRDF();
+  	  break;
+  	case "remove":
+  	  $this->deleteRDF();
+  	  break;
+  	case "namespaces":
+  	  $this->editNamespaces();
+  	  break;
+  	case "endpoints":
+  	  $this->editEndpoints();
+  	  break;
+  	case "components":
+  	  if(sizeof($params) == 2){
   	    $this->componentEditor();
-  	    break;*/
-  	  default:
-  	    HTTPStatus::send404($params[1]);
+  	  }else{
+  	    $this->componentEditorApi(array_slice($params, 2));
   	  }
-  	} 
+  	  break;
+  	default:
+  	  HTTPStatus::send404($params[1]);
+  	}
   	exit(0);
   }
   
@@ -351,7 +359,19 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
       </div>
      </div>
      <script type='text/javascript' src='".$conf['basedir']."js/jquery.js'></script>
-     <script type='text/javascript' src='".$conf['basedir']."js/namespaces.js'></script>
+     <script type='text/javascript'>
+     //<![CDATA[
+     $(document).ready(function(){
+                 $('.edit-button').on('click', function(target){
+                    $('#prefix').val($(this).attr('data-prefix'));
+                    $('#namespace').val($(this).attr('data-ns'));
+                    $('html, body').stop().animate({
+                      scrollTop: $('body').offset().top
+                    }, 1000);
+                 })
+     });
+     //]]>
+     </script>
      <div class='fluid-row'>
       <div class='span8'>
        <legend>Edit other namespaces</legend>
@@ -372,6 +392,70 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
     }
   }
   
+  
+  
+  protected function editEndpoints(){
+    global $conf;
+    if($_SERVER['REQUEST_METHOD'] == 'GET'){
+      $nstable = "";
+      foreach($conf['endpoint'] as $k=>$v){
+        $nstable .= "<tr><td>".$k."</td><td id='$k'>".$v."</td><td><button class='button edit-button' data-prefix='$k' data-ns='$v'>Edit</button></tr>";
+      }
+      echo $this->head."
+      <div class='fluid-row'>
+      <div class='span7'>
+      <form action='endpoints' method='post'
+      enctype='multipart/form-data'>
+      <legend>Edit Endpoints</legend>
+      <label for='file'>Shortname</label>
+      <input type='text' name='prefix' id='prefix' value='local'/>
+      <span class='help-block'>The prefix to describe this namespace ('local' is the one used to mirror URIs of the data in this server)</span>
+      <label for='file'>Endpoint</label>
+      <input type='text' name='endpoint' id='endpoint' value='".$conf['ns']['local']."'/>
+      <span class='help-block'>The endpoint URL</span>
+      <br />
+      <button type='submit' class='btn'>Submit</button></form>
+      </div>
+      <div class='span4 well'>
+      <legend>Add or edit an endpoint</legend>
+      <p>To add a new endpoint, simply add a new prefix, the SPARQL endpoint URL and click on Submit.</p>
+      <p>To edit an endpoint, click on 'edit' in the proper row in the following table and modify the values in the form.</p>
+      </div>
+      </div>
+      <script type='text/javascript' src='".$conf['basedir']."js/jquery.js'></script>
+           <script type='text/javascript'>
+     //<![CDATA[
+     $(document).ready(function(){
+                 $('.edit-button').on('click', function(target){
+                    $('#prefix').val($(this).attr('data-prefix'));
+                    $('#endpoint').val($(this).attr('data-ns'));
+                    $('html, body').stop().animate({
+                      scrollTop: $('body').offset().top
+                    }, 1000);
+                 })
+     });
+     //]]>
+     </script>
+      <div class='fluid-row'>
+      <div class='span8'>
+      <legend>Edit other namespaces</legend>
+      <table class='table table-striped'>
+      <thead><td>Prefix</td><td>Namespace</td><td>Edit</td></thead>$nstable</table>
+      ".$this->foot;
+    }elseif($_SERVER['REQUEST_METHOD'] == 'POST'){
+      $ns = (isset($_POST['endpoint']))?$_POST['endpoint']:'http://'.$_SERVER['SERVER_NAME'].'/';
+      $prefix = (isset($_POST['prefix']))?$_POST['prefix']:'local';
+      $return_var = 0;
+      exec ("php utils/modules/remove-endpoint.php ".$prefix, &$output, $return_var);
+      exec ("php utils/modules/add-endpoint.php ".$prefix." ".$ns, &$output, $return_var);  
+      if($return_var == 0){
+        echo $this->head ."<div class='alert alert-success'>Your endpoint was updated successfully to $ns</div><div class='alert'>You can now return to the <a href='menu'>home menu</a>.</div>".$this->foot;
+      }else{
+        echo $this->head ."<div class='alert alert-error'>Error: Update did not finished successfully. Please check setting.inc.php located at ".$conf['home'].".</div><div class='alert'>You can now return to the <a href='menu'>home menu</a>.</div>".$this->foot;
+      }
+    }
+  }
+  
   protected function startEndpoint(){
     $return_var = 0;
     exec ("utils/modules/start-endpoint.sh", &$output, $return_var);  
@@ -383,47 +467,133 @@ textarea{ font-family: Monaco,'Droid Sans Mono'}
   }
   
   protected function componentEditor(){
+    global $lodspk;
+    global $conf;
     exec ("utils/lodspk.sh list components", &$output, $return_var);
     $menu = "";
+    $lastComponentType="";
     foreach($output as $line){
       if($line == ""){
           $menu .= "</ul>\n";
       }else{
         if(preg_match("/^\w/", $line) ){
+            $lastComponentType = trim($line);
             $menu .= "<ul class='nav nav-list'>
-            <li class='nav-header'>".trim($line)."</li>\n";
+            <li class='nav-header'>".$lastComponentType."  <button class='btn btn-mini btn-info'>new</button></li>\n";
         }else{
-          $menu .= "<li><a href='#'>".trim($line)."</a></li>\n";
+          $componentName = trim($line);
+          $menu .= "<li><a href='#' class='lodspk-component' data-component-type='$lastComponentType' data-component-name='$componentName'>".$componentName."</a></li>\n";
         }
       }
     }
-    echo $this->head ."<div class='row-fluid'>
-    <div class='span3 well'>$menu
-    </div>
-    <div class='bs-docs-template span9'>
-     <textarea class='field span12' rows='8' cols='25'></textarea>
-      <button class='btn btn-info'>Save</button>
-    </div>
-   </div> 
+    echo $this->head ."
+    <script src='".$conf['basedir'] ."js/editor.js'></script>
     <div class='row-fluid'>
-    <div class='span3 well'>
-     <ul class='nav nav-list'>
-      <li class='nav-header'>Queries</li>
-      <li><a href='#'>sp.query</a></li>
-      <li><a href='#'>po.query</a></li>
-      <li><a href='#'>dbpedia/details.query</a></li>
-      </ul>
-    </div>
+     <div class='span3 well'>$menu</div>
+     <div class='bs-docs-template span9'>
+      <textarea class='field span12' rows='8' cols='25' id='template-editor'></textarea>
+      <button class='btn btn-info disabled' id='template-save-button' data-url=''>Save</button>
+      <div class='alert alert-success hide' id='template-msg'></div>
+     </div>
+    </div> 
+    <div class='row-fluid'>
+     <div class='span3'>
+      <div class='container'>
+       <div class='row-fluid'>
+        <div class='span3 well'>
+          <legend>Templates  <button class='btn btn-mini btn-info'>new</button></legend>
+         <ul class='nav nav-list' id='template-list'>
+         </ul>        
+        </div>
+       </div>
+       <div class='row-fluid'>
+        <div class='span3 well'>
+          <legend>Queries  <button class='btn btn-mini btn-info'>new</button></legend>
+         <ul class='nav nav-list' id='query-list'>
+         </ul>
+        </div>
+       </div>
+      </div>
+     </div>
      <div class='span9  bs-docs-query'>
-      <textarea class='field span12' rows='8' cols='25'></textarea>
-      <button class='btn btn-info'>Save</button>
+      <textarea class='field span12' rows='8' cols='25' id='query-editor'></textarea>
+      <button class='btn btn-info disabled' id='query-save-button' data-url=''>Save</button>
+      <div class='alert alert-success hide' id='query-msg'></div>
+     </div>
      </div>
     </div>
    </div>
   </div>
+
     ".$this->foot;
   }
 
+  
+  protected function componentEditorApi($params){
+    switch($params[0]){
+  	case "details":
+  	  $this->getComponentDetails(array_slice($params, 1));
+  	  break;
+  	case "save":
+  	  if(sizeof($params) > 2){
+  	    $this->saveComponent($params);
+  	  }else{
+  	    HTTPStatus::send404($params[1]);
+  	  }
+  	  break;  	  
+  	default:
+  	  HTTPStatus::send404($params[1]);
+  	}
+  }
+
+  protected function getComponentDetails($params){
+    $componentType = $params[0];
+    $componentName = $params[1];
+    if(!isset($componentType) || !isset($componentName)){
+      HTTPStatus::send404();
+  	  exit(0);
+    }    
+    $return_var = 0;
+    exec ("utils/modules/detail-component.sh $componentType $componentName", &$output, $return_var);  
+    if($return_var == 0){
+      $comps = array();
+      $lastKey = "";
+      foreach($output as $line){
+        if($line == ""){
+          $menu .= "</ul>\n";
+        }else{
+          if(preg_match("/^\w/", $line) ){
+            $lastKey = trim($line);
+            $comps[$lastKey] = array();
+          }else{
+            array_push($comps[$lastKey], trim($line));
+          }
+        }
+      }
+      header("Content-type: application/json");
+      echo json_encode($comps);
+    }else{
+      HTTPStatus::send500();
+      exit(0);
+    }
+  }
+
+  protected function saveComponent($params){
+    if($_SERVER['REQUEST_METHOD'] == 'POST'){
+      $path = implode("/", array_slice($params, 1));
+      if(file_exists("components/".$path)){
+        $result = file_put_contents("components/".$path,$_POST['content'] );
+        if($result === FALSE){
+                HTTPStatus::send500();
+        }else{
+          echo json_encode(array('success' => true, 'size' => $result));          
+        }
+      }else{
+        HTTPStatus::send500();
+        exit(0);
+      }
+    }
+  }
   protected function stopEndpoint(){
     $return_var = 0;
     exec ("utils/modules/stop-endpoint.sh", &$output, $return_var);  
